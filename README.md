@@ -1,4 +1,4 @@
-hypersolid hybrid uefi/bios bootloader for baremetal maschines
+hypersolid hybrid uefi/bios bootloader for baremetal systems
 ===================================================================
 
 **boot hypersolid via syslinux efi+mbr**
