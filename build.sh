@@ -32,19 +32,12 @@ docker run \
     --name ${CONTAINER_NAME}-env \
     --tty \
     --interactive \
+    --volume ${BASEDIR}/dist:/tmp/dist \
+    --rm \
     ${CONTAINER_NAME} \
 && {
     echo "image created"
 } || {
     echo "ERROR: image creation failed"
     exit 3
-}
-
-# copy disk image
-docker cp ${CONTAINER_NAME}-env:/tmp/disk.img.gz $WORKINGDIR/dist/boot.img.gz \
-&& {
-    echo "image copied into $WORKINGDIR/dist"
-} || {
-    echo "ERROR: copying image from docker container failed"
-    exit 4
 }

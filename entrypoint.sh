@@ -133,3 +133,4 @@ losetup --detach $LOOPDEV
 
 # compress image
 gzip ${VIRTUAL_DISK}
+cp ${VIRTUAL_DISK}.gz /tmp/dist/
