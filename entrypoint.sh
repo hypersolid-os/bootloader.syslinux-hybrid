@@ -24,10 +24,10 @@ truncate --size 650M $VIRTUAL_DISK
 # Create partition layout
 # set "Legacy BIOS bootable flag" for boot parition (tag required by gptmbr.bin)
 sgdisk --clear \
-  --new 1::+50M   --typecode=1:ef00 --change-name=1:'efiboot' \
-  --new 2::+50M    --typecode=2:8300 --change-name=2:'biosboot' --attributes=2:set:2 \
-  --new 3::+512MB  --typecode=3:8300 --change-name=3:'system' \
-  --new 4::-0      --typecode=4:8300 --change-name=4:'conf' \
+  --new 1::+50M   --typecode=1:ef00 --change-name=1:'rescue-efiboot' \
+  --new 2::+50M    --typecode=2:8300 --change-name=2:'rescue-biosboot' --attributes=2:set:2 \
+  --new 3::+512MB  --typecode=3:8300 --change-name=3:'rescue-system' \
+  --new 4::-0      --typecode=4:8300 --change-name=4:'rescue-conf' \
   ${VIRTUAL_DISK}
 
 # show layout
