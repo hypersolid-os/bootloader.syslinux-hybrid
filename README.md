@@ -6,14 +6,15 @@ hypersolid hybrid uefi/bios bootloader for baremetal systems
 Use [syslinux/syslinux](https://wiki.syslinux.org/wiki/index.php?title=syslinux) as bootloader to load hypersolid from removable devices.
 
 Features
-===================
+----------------------------
 
 * hybrid boot support
 * legacy/mbr mode
 * efi mode
+* dual system partitions (primary and backup)
 
 How to deploy
-===================
+----------------------------
 
 Write the image directly to the device via `dd`
 
@@ -26,7 +27,7 @@ sgdisk -G /dev/sdX && sync
 ```
 
 Add system image
-===================
+----------------------------
 
 You can directly add the hypersolid kernel/initramfs/system images to the build by adding them into the `image/` directory. They are automatically copied into the final partition image. 
 
@@ -40,17 +41,19 @@ image/
 ```
 
 Partition layout
-===================
+----------------------------
 
 The following GPT based partition layout is used (of course, syslinux can handle ext2 on gpt including legacy/mbr mode).
 
-* Partition 1 "efiboot"  - `50MB`  | `FAT32` | syslinux efi loader ons esp partition including kernel+initramfs(1)
-* Partition 2 "biosboot" - `50MB`  | `EXT2`  | syslinux legacy bootloader including kernel+initramfs(2)
-* Partition 3 "system"   - `512MB` | `EXT4`  | hypersolid system partition including `system.img`
-* Partition 4 "conf"     - `37MB`  | `EXT4`  | hypersolid persistent storage (optional)
+* Partition 1 "bootloader" - `50MB`  | `FAT32` | syslinux efi+legacy loader ons esp partition including kernel+initramfs(1)
+* Partition 2 "system0"    - `2GB`   | `EXT4`  | hypersolid system0 partition including `system.img`
+* Partition 3 "system1"    - `2GB`   | `EXT4`  | hypersolid system1 partition including `system.img`
+* Partition 4 "conf"       - `512MB` | `EXT4`  | hypersolid persistent storage
+* Partition 5 "swap"       - `4GB`   | `EXT4`  | swap (optional)
+* Partition 6 "data"       - `XGB`   | `EXT4`  | persistent storage (optional)
 
 Build the image
-===================
+----------------------------
 
 This bootloader-generator creates a raw GPT disk image with 4 paritions (boot, config) including all required bootloader files + configs. The build environment is isolated within a docker container but requires full system access (privileged mode) due to the use of loop devices.
 
@@ -62,7 +65,7 @@ Just run `build.sh` to build the docker image and trigger the image build script
 ```
 
 Boot stages
-===================
+----------------------------
 
 ### legacy bios/mbr ###
 
@@ -84,6 +87,25 @@ Boot stages
 3. syslinux core module searches for the configuration file `efi/boot/syslinux.cfg` and loads it | syslinux-stage2
 4. syslinux loads `kernel.img` and `initramfs.ing` into ramdisk | syslinux-stage3
 5. syslinux executes the `kernel.img` code | kernel-stage1
+
+
+Serial Console
+----------------------------
+
+To enable the serial console (syslinux bootloader + kernel) just add the `SERIAL` directive as first line to your syslinux config and append the `console` option the kernel options.
+
+**Example**
+
+```conf
+SERIAL 0 115200
+DEFAULT linux
+    SAY [BIOS/MBR] - booting debian kernel from SYSLINUX...
+LABEL linux
+    KERNEL ../kernel.img
+    APPEND root=PARTLABEL=system0 pstorage=PARTLABEL=rescue-conf ro console=tty0 console=ttyS0,115200n8
+    INITRD ../initramfs.img
+
+```
 
 License
 ----------------------------
